@@ -36,6 +36,14 @@ VALUE_COUNTER  = 0
 VALUE_GAUGE    = 1
 VALUE_DERIVE   = 2
 VALUE_ABSOLUTE = 3
+
+VALUE_LOOKUP = {
+    'counter':  VALUE_COUNTER,
+    'gauge':    VALUE_GAUGE,
+    'derive':   VALUE_DERIVE,
+    'absolute': VALUE_ABSOLUTE,
+}
+
 VALUE_CODES = {
     VALUE_COUNTER:  "!Q",
     VALUE_GAUGE:    "<d",
@@ -51,10 +59,14 @@ def pack_string(type_code, string):
     return struct.pack("!HH", type_code, 5 + len(string)) + string + "\0"
 
 def pack_value(name, value):
+    value_type = VALUE_LOOKUP[PLUGIN_TYPE]
+    value_fmt = VALUE_CODES[value_type]
+
     return "".join([
         pack(TYPE_TYPE_INSTANCE, name),
         struct.pack("!HHH", TYPE_VALUES, 15, 1),
-        struct.pack("<Bd", VALUE_GAUGE, value)
+        struct.pack("<B", value_type),
+        struct.pack(value_fmt, value)
     ])
 
 def pack(id, value):
